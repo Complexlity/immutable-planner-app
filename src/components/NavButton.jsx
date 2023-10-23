@@ -7,12 +7,13 @@ import { useState } from 'react';
 
 export default function NavButton() {
   const [count, setCount] = useState(0)
-    const { providerState, setProviderState, passportState: passportInstance, setPassportState,  } = useMyContext();
+    const {  setProviderState, passportState: passportInstance, setPassportState,  } = useMyContext();
 const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
   console.log(clientId)
   console.log(passportInstance)
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
+  const [provider, setProvider] = useState(null)
 
 
   async function login() {
@@ -26,8 +27,6 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
       try {
          console.log("I am connecting now")
          provider = await passportInstance.connectImx()
-         console.log("provider after popup connect", provider);
-
         } catch (error) {
           console.log("Something went wrong")
          console.log({ error })
@@ -38,8 +37,8 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
         setIsLoading(false)
       }
     }
-    setProviderState(provider)
-      setButtonState('Connected')
+    setProvider(provider)
+    setButtonState('Connected')
     return
   }
 
@@ -47,6 +46,8 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
     await passportInstance.logout();
     setButtonState('Connect Passport')
 }
+
+
 
   return (
  <>
@@ -68,15 +69,23 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
 		`}
 </Script>
       </Head>
-      <div className="fixed flex justify-end px-4 top-0 backdrop-blur-md py-4   w-full">
+      <div className="fixed flex justify-end px-4 gap-4 top-0 backdrop-blur-md py-4   w-full">
 
           {
             buttonState === 'Connected'
             ?
             <>
-            <button onClick={logout}>Logout</button>
+            {provider != null
+              ?
+            <>
+              <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{provider.user.profile.email} </p>
+                  <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{provider.user.imx.ethAddress }</p>
+                </>
+                : null
+            }
+            <button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>
             </>
-            : <button disabled={isLoading} className={`bg-green-500 text-grey-100 px-2 py-2 opacity-100 rounded-full ${isLoading ? "bg-green-200" : "" }`} onClick={login}>
+            : <button disabled={isLoading} className={`text-grey-100 px-4 py-2 opacity-100 rounded-full ${isLoading ? "bg-green-200" : "bg-green-500" }`} onClick={login}>
           {buttonState}
         </button>
           }

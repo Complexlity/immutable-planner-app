@@ -17,11 +17,10 @@ const passportInstance = typeof window !== 'undefined' ? new passport.Passport(p
 export const MyContext = createContext();
 
 export function MyProvider({ children }) {
-  const [providerState, setProviderState] = useState(null);
   const [passportState, setPassportState] = useState(passportInstance);
 
   return (
-    <MyContext.Provider value={{ providerState, setProviderState, passportState, setPassportState, }}>
+    <MyContext.Provider value={{  passportState, setPassportState, }}>
       {children}
     </MyContext.Provider>
   );
