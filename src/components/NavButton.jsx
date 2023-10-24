@@ -1,19 +1,21 @@
 'use client'
 
 import { useMyContext } from "@/store/passportStore";
+import { passport } from "@imtbl/sdk";
 import Head from "next/head";
 import Script from "next/script";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function NavButton() {
   const [count, setCount] = useState(0)
-    const {  setProviderState, passportState: passportInstance, setPassportState,  } = useMyContext();
-const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
+  const { setProviderState, passportState: passportInstance, setPassportState, } = useMyContext();
+  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
   console.log(clientId)
   console.log(passportInstance)
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
   const [provider, setProvider] = useState(null)
+  const [user, setUser] = useState(null)
 
 
   async function login() {
@@ -25,16 +27,19 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
     console.log("provider after silent connect", provider);
     if (!provider) {
       try {
-         console.log("I am connecting now")
-         provider = await passportInstance.connectImx()
-        } catch (error) {
-          console.log("Something went wrong")
-         console.log({ error })
-         setButtonState('Connect Passport')
-          throw error
+        console.log("I am connecting now")
+        provider = await passportInstance.connectImx()
+      }
+
+      catch (error) {
+        console.log("Something went wrong")
+        console.log({ error })
+        setButtonState('Connect Passport')
+        throw error
       }
       finally {
         setIsLoading(false)
+
       }
     }
     setProvider(provider)
@@ -46,6 +51,18 @@ const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
     await passportInstance.logout();
     setButtonState('Connect Passport')
 }
+
+
+
+  useEffect(() => {
+    async function getUser(){
+  const user = await passportInstance.getUserInfo()
+      setUser(user)
+}
+    if (provider) {
+      getUser()
+    }
+  }, [provider])
 
 
 
