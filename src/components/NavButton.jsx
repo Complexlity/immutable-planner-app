@@ -8,19 +8,19 @@ import { useState, useEffect } from 'react';
 
 export default function NavButton() {
   const [count, setCount] = useState(0)
-  const { setProviderState, passportState: passportInstance, setPassportState, } = useMyContext();
+  const { setProviderState: setProvider, providerState: provider ,passportState: passportInstance, setPassportState, } = useMyContext();
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
   console.log(clientId)
   console.log(passportInstance)
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
-  const [provider, setProvider] = useState(null)
+
   const [user, setUser] = useState(null)
 
 
   async function login() {
-    console.log("I am here")
     if (!passportInstance) return
+    console.log("I am here")
     setButtonState("...Connecting")
     setIsLoading(true)
     let provider = await passportInstance.connectImxSilent()

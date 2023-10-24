@@ -18,9 +18,10 @@ export const MyContext = createContext();
 
 export function MyProvider({ children }) {
   const [passportState, setPassportState] = useState(passportInstance);
+  const [providerState, setProviderState] = useState(null)
 
   return (
-    <MyContext.Provider value={{  passportState, setPassportState, }}>
+    <MyContext.Provider value={{ providerState, setProviderState,  passportState, setPassportState, }}>
       {children}
     </MyContext.Provider>
   );

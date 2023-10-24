@@ -1,3 +1,24 @@
+.tokens {
+  overflow-x: auto;
+  text-wrap: wrap;
+  display:grid;
+  gap:.5rem;
+  align-items: center;
+  & summary{
+    color: white;
+    -webkit-margin-collapse: collapse;
+
+  }
+  & summary:first-of-type {
+    margin-top: .5rem;
+  }
+  & summary:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+}
+
+
+
 .react-calendar {
   width: 350px;
   max-width: 100%;
