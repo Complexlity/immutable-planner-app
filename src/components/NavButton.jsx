@@ -10,8 +10,6 @@ export default function NavButton() {
   const [count, setCount] = useState(0)
   const { setProviderState: setProvider, providerState: provider ,passportState: passportInstance, setPassportState, } = useMyContext();
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
-  console.log(clientId)
-  console.log(passportInstance)
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -20,7 +18,6 @@ export default function NavButton() {
 
   async function login() {
     if (!passportInstance) return
-    console.log("I am here")
     setButtonState("...Connecting")
     setIsLoading(true)
     let provider = await passportInstance.connectImxSilent()
