@@ -1,6 +1,6 @@
 import '@/styles/globals.css'
-import "./App.css";
-import "./styles.css"
+import "../styles/App.css";
+import "../styles/styles.css"
 import { MyProvider } from '@/store/passportStore'
 
 export default function App({ Component, pageProps }) {
