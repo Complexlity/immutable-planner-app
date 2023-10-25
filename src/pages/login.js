@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useMyContext } from '@/store/passportStore';
 
 export default function MyPage() {
-  const { providerState, setProviderState, passportState: passportInstance, setPassportState } = useMyContext();
-  console.log(passportInstance)
+  const { passportState: passportInstance,  } = useMyContext();
+  
 
   useEffect(() => {
     async function handleLoginCallback() {

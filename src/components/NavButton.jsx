@@ -7,7 +7,6 @@ import Script from "next/script";
 import { useState, useEffect } from 'react';
 
 export default function NavButton() {
-  const [count, setCount] = useState(0)
   const { setProviderState: setProvider, providerState: provider ,passportState: passportInstance,  } = useMyContext();
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
