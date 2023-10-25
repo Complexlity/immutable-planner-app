@@ -2,8 +2,7 @@
 
 import { useMyContext } from "@/store/passportStore";
 import Head from "next/head";
-import Script from "next/script";
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function NavButton() {
   const { setProviderImx, providerImx ,passportState: passportInstance, providerZkevm  } = useMyContext();
