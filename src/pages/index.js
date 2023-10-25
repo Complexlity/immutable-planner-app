@@ -1,5 +1,5 @@
 
-import NavButton from '@/components/NavButton'
+import NavButton from '@/components/NavBar'
 import InnerApp from "@/components/App";
 
 export default function Home() {

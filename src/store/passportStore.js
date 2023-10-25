@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useLayoutEffect } from 'react';
 import { config, passport, provider } from '@imtbl/sdk';
 
 const passportConfig = {
@@ -17,11 +17,12 @@ const passportInstance = typeof window !== 'undefined' ? new passport.Passport(p
 export const MyContext = createContext();
 
 export function MyProvider({ children }) {
-  const [passportState, setPassportState] = useState(passportInstance);
-  const [providerState, setProviderState] = useState(null)
+  const [passportState] = useState(passportInstance);
+  const [providerImx, setProviderImx] = useState(null)
+
 
   return (
-    <MyContext.Provider value={{ providerState, setProviderState,  passportState, setPassportState, }}>
+    <MyContext.Provider value={{ providerImx, setProviderImx,  passportState }}>
       {children}
     </MyContext.Provider>
   );
