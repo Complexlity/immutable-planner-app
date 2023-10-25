@@ -1,12 +1,9 @@
 'use client'
 
-import React, { useState } from "react";
-import ClockWidget from "./widgets/ClockWidget";
-import WidgetGalleryModal from "./modals/WidgetGalleryModal";
+import { useState } from "react";
 import Draggable from "react-draggable";
-import TimerWidget from "./widgets/TimerWidget";
-import CalendarWidget from "./widgets/CalendarWidget";
-import ImmutableWidget from './widgets/ImmutableWidget'
+import WidgetGalleryModal from "./modals/WidgetGalleryModal";
+import ImmutableWidget from './widgets/ImmutableWidget';
 
 
 function App() {

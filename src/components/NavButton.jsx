@@ -8,12 +8,10 @@ import { useState, useEffect } from 'react';
 
 export default function NavButton() {
   const [count, setCount] = useState(0)
-  const { setProviderState: setProvider, providerState: provider ,passportState: passportInstance, setPassportState, } = useMyContext();
-  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID
+  const { setProviderState: setProvider, providerState: provider ,passportState: passportInstance,  } = useMyContext();
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
 
-  const [user, setUser] = useState(null)
 
 
   async function login() {
@@ -48,18 +46,6 @@ export default function NavButton() {
     await passportInstance.logout();
     setButtonState('Connect Passport')
 }
-
-
-
-  useEffect(() => {
-    async function getUser(){
-  const user = await passportInstance.getUserInfo()
-      setUser(user)
-}
-    if (provider) {
-      getUser()
-    }
-  }, [provider])
 
 
 
