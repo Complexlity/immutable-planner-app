@@ -6,7 +6,7 @@ const passportConfig = {
     environment: config.Environment.SANDBOX
   }),
   clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
-  redirectUri: process.env.CALLBACK_URL,
+  redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL,
   logoutRedirectUri: process.env.NEXT_PUBLIC_LOGOUT_URL,
   audience: 'platform_api',
   scope: 'openid offline_access email transact'
