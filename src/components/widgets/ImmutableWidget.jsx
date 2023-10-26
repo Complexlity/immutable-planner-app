@@ -68,7 +68,7 @@ return (
     <div className="min-w-[400px] max-w-[500px] grid gap-4 py-3 overflow-hidden">
 
       <details open>
-        <summary className="text-white underline text-xl overflow-x-auto max-w-full">User Details</summary>
+        <summary className="text-white underline text-xl overflow-x-auto max-w-full mb-4">User Details</summary>
       <div
         className="tokens max-w-[500px]">
 
