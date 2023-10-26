@@ -32,7 +32,7 @@ You can also find a [Live Example](https://immutable-planner-app-starter.vercel.
 
 ## Register You Application On Immutable Hub
 
-In your code editor, go to [.env.example](.env.example)
+Create a new file `.env` and copy all the contents of [.env.example](.env.example) into it.
 
 ```.env
 NEXT_PUBLIC_LOGOUT_URL=<Your Immutable Hub Logout URL>
@@ -67,10 +67,10 @@ When you deploy, you also have to change these URLs to point to the site address
 
 Click **Create** once you have filled these values.
 
+![Alt text](image-3.png)
 
-![Alt text](image-4.png)
+Copy the three values and replace them in the `.env` file
 
-Copy the three values and replace them in the `.env.example` file
 
 ## The Bug Before The Storm
 
@@ -88,15 +88,13 @@ if (typeof global === 'undefined') {
 
 ## Initialise the Passport object
 
-The main package that enables all the passport functions is `@imtbl/sdk`
-
-In your own application, ensure you install the package via npm to used these functions
+The main package that enables all the passport functions is `@imtbl/sdk`. First we have to install this package into the project
 
 ```bash
 npm install @imtbl/sdk
 ```
 
-To have access to immutable authentication, you have to import the necessary function and substitute the values `Logout Url`,  `Callback Uri` and `Client Id`
+To have access to immutable authentication, you have to import functions `config` and `passport` which will be used to create a new passport instance object.
 
 ```javascript
 //import the needed functions
@@ -318,7 +316,6 @@ export default function NavButton() {
       </>
   );
 }
-
 </pre>
 </code>
 </details>
