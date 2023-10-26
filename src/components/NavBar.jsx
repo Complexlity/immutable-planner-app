@@ -65,7 +65,7 @@ export default function NavButton() {
       dispatch({
         type: 'add_user_info',
         key: 'idToken',
-        value: accessToken
+        value: idToken
       })
 
     } catch (error) {
