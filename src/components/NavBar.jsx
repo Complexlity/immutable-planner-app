@@ -2,13 +2,13 @@
 
 import { useMyContext } from "@/store/passportStore";
 import Head from "next/head";
-import { useState } from 'react';
+import Script from "next/script";
+import { useReducer, useState } from 'react';
 
 export default function NavButton() {
-  const { setProviderImx, providerImx ,passportState: passportInstance, providerZkevm  } = useMyContext();
+  const {passportState: passportInstance, userInfo, dispatch } = useMyContext();
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
-
 
 
 
@@ -17,39 +17,68 @@ export default function NavButton() {
     if (!passportInstance) return
     setButtonState("...Connecting")
     setIsLoading(true)
-    let providerImx = await passportInstance.connectImxSilent()
-    console.log("provider after silent connect", providerImx);
-    if (!providerImx) {
-      try {
-        console.log("I am connecting now")
-        providerImx = await passportInstance.connectImx()
-      }
+    try {
+      console.log("I am connecting now")
+      const providerZkevm = passportInstance.connectEvm()
 
-      catch (error) {
-        console.log("Something went wrong")
+      const accounts = await providerZkevm.request({ method: "eth_requestAccounts" })
+
+
+
+      // Set the address
+      dispatch({
+        type: 'add_user_info',
+        key: 'address',
+        value: accounts[0]
+      })
+      const user = await passportInstance.getUserInfo()
+
+
+      // Set the email
+      dispatch({
+        type: 'add_user_info',
+        key: 'email',
+        value: user.email
+      })
+
+      //set the nickname
+      dispatch({
+        type: 'add_user_info',
+        key: 'nickname',
+        value: user.nickname
+      })
+
+      const accessToken = await passportInstance.getAccessToken()
+
+
+      // set the access token
+      dispatch({
+        type: 'add_user_info',
+        key: 'accessToken',
+        value: accessToken
+      })
+
+
+      const idToken = await passportInstance.getIdToken()
+
+      // set the id token
+      dispatch({
+        type: 'add_user_info',
+        key: 'idToken',
+        value: accessToken
+      })
+
+    } catch (error) {
+    console.log("Something went wrong")
         console.log({ error })
         setButtonState('Connect Passport')
-        throw error
-      }
-      finally {
-        setIsLoading(false)
-
-      }
+          throw error
+    } finally {
+      setIsLoading(false)
     }
-
-    setProviderImx(providerImx)
     setButtonState('Connected')
     return
-    // try {
 
-    //   let provider = await passportInstance.connectEvm()
-    //   console.log(provider)
-    //   const blockNumber = await provider.request({ method: 'eth_blockNumber' });
-    //   console.log({blockNumber})
-    // } catch (error) {
-    //   console.log("Something went wrong")
-    //   console.log(err)
-    // }
   }
 
   async function logout()  {
@@ -73,15 +102,12 @@ export default function NavButton() {
           {
             buttonState === 'Connected'
             ?
+
             <>
-            {providerImx != null
-              ?
-            <>
-              <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{providerImx.user.profile.email} </p>
-                  <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{providerImx.user.imx.ethAddress }</p>
-                </>
-                : null
-            }
+              <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.email ?? "Hello world"} </p>
+                  <p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.address ?? "Hello world" }</p>
+
+
             <button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>
             </>
             : <button disabled={isLoading} className={`text-grey-100 px-4 py-2 opacity-100 rounded-full ${isLoading ? "bg-green-200" : "bg-green-500" }`} onClick={login}>

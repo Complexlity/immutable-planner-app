@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useLayoutEffect } from 'react';
+import { createContext, useContext, useState, useReducer } from 'react';
 import { config, passport, provider } from '@imtbl/sdk';
 
 const passportConfig = {
@@ -18,11 +18,27 @@ export const MyContext = createContext();
 
 export function MyProvider({ children }) {
   const [passportState] = useState(passportInstance);
-  const [providerImx, setProviderImx] = useState(null)
+  const [userInfo, dispatch] = useReducer(reducer, {address: null, email: null, nickname: null, idToken: null, accessToken: null})
+
+
+  function reducer(state, action) {
+    const key = action.key
+    const value = action.value
+    switch (action.type) {
+      case `add_user_info`: {
+        return {
+          ...state,
+          [key]: value
+        }
+      }
+      default: return state
+    }
+  }
+
 
 
   return (
-    <MyContext.Provider value={{ providerImx, setProviderImx,  passportState }}>
+    <MyContext.Provider value={{ passportState, userInfo, dispatch }}>
       {children}
     </MyContext.Provider>
   );
