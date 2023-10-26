@@ -58,13 +58,17 @@ Follow the steps below to get the required values
 
 1. **Application** Type: Web application (remains unchanged). This represents where the application is intented to be run
 2. **Client Name**: give your application any name. This is just an identifier.
-3. **Logout URLs**: This is very **IMPORTANT**. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g <https://your-site-name.com/>. Since we would be runnig the code locally on port `3001`. Enter `http://localhost:3001` into the input box
-4. **Callback URLs**: Also very **IMPORTANT**. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g <https://your-site-name.com/login>.
-Since we are runnign the code on our dev server port `3001`, Enter `http://localhost:3001/login` into the input box
+3. **Logout URLs**: This is very **IMPORTANT**. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g `<https://your-site-name.com/>`.
+Since we would be runnig the code locally on port `3001`. Enter http://localhost:3001 into the input box
+4. **Callback URLs**: Also very **IMPORTANT**. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g `<https://your-site-name.com/login>`.
+Since we are runnign the code on our dev server port `3001`, Enter http://localhost:3001/login into the input box
+
+When you deploy, you also have to change these URLs to point to the site address
 
 Click **Create** once you have filled these values.
 
-![Alt text](image-3.png)
+
+![Alt text](image-4.png)
 
 Copy the three values and replace them in the `.env.example` file
 
