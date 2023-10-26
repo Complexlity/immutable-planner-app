@@ -6,7 +6,6 @@ import { useRef, useState } from 'react';
 export default function ImmutableWidget() {
   const { passportState: passportInstance, userInfo } = useMyContext()
   const providerZkevm = passportInstance?.connectEvm()
-  const inputRef = useRef(null)
   const [isLoading, setIsLoading] = useState(false);
   const[gasPrice, setGasPrice] = useState('');
   const[userBalance, setUserBalance] = useState('');
@@ -21,32 +20,46 @@ export default function ImmutableWidget() {
 
       const gasPrice = await providerZkevm.request({ method: 'eth_gasPrice' });
       setGasPrice(gasPrice)
-    } catch(error){}
+    } catch (error) {
+      console.log(error)
+    }
     finally {
       setIsLoading(false)
     }
   }
 
   async function getUserBalance() {
+    console.log({user: userInfo.address})
     if (!passportInstance || !userInfo.address) return
     setIsLoading(true)
     try {
       const userBalance = await providerZkevm.request({
+        method: 'eth_getBalance',
+  params: [
+    userInfo.address,
+    'latest'
+  ]
       });
       setUserBalance(userBalance)
-          } catch (error) {}
+    } catch (error) {
+      console.log(error)
+          }
     finally {
       setIsLoading(false)
     }
   }
 
   async function getLatestBlockNumber() {
+    console.log({address: userInfo.address})
   if (!passportInstance || !userInfo.address) return
     setIsLoading(true)
+
     try {
-      const latestBlockNumber = await provider.request({ method: 'eth_blockNumber' });
+      const latestBlockNumber = await providerZkevm.request({ method: 'eth_blockNumber' });
       setLatestBlockNumber(latestBlockNumber)
-    } catch(err){}
+    } catch (error) {
+      console.log(error)
+    }
     finally {
       setIsLoading(false)
     }
@@ -56,9 +69,11 @@ export default function ImmutableWidget() {
   if (!passportInstance || !userInfo.address) return
     setIsLoading(true)
     try {
-      const chainId = await provider.request({ method: 'eth_chainId' });
+      const chainId = await providerZkevm.request({ method: 'eth_chainId' });
       setChainId(chainId)
-    } catch (error) { }
+    } catch (error) {
+      console.log(error)
+    }
     finally {
       setIsLoading(false)
     }
@@ -83,7 +98,7 @@ return (
       <details>
       <summary className="text-white text-xl underline mb-4">
         {isLoading ?
-          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg> : null}
