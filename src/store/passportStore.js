@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useReducer } from 'react';
-import { config, passport, provider } from '@imtbl/sdk';
+import { config, passport } from '@imtbl/sdk';
 
 const passportConfig = {
   baseConfig: new config.ImmutableConfiguration({
@@ -20,7 +20,6 @@ export function MyProvider({ children }) {
   const [passportState] = useState(passportInstance);
   const [userInfo, dispatch] = useReducer(reducer, {address: null, email: null, nickname: null, idToken: null, accessToken: null})
 
-
   function reducer(state, action) {
     const key = action.key
     const value = action.value
@@ -34,8 +33,6 @@ export function MyProvider({ children }) {
       default: return state
     }
   }
-
-
 
   return (
     <MyContext.Provider value={{ passportState, userInfo, dispatch }}>

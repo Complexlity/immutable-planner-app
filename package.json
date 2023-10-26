@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@imtbl/core-sdk": "^2.0.0",
     "@imtbl/sdk": "^0.13",
     "@magic-ext/oidc": "^1.0.1",
     "framer-motion": "^10.12.18",

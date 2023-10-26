@@ -3,8 +3,6 @@ import { useMyContext } from '@/store/passportStore';
 
 export default function MyPage() {
   const { passportState: passportInstance,  } = useMyContext();
-  
-
   useEffect(() => {
     async function handleLoginCallback() {
       if (!passportInstance) {
@@ -22,9 +20,6 @@ export default function MyPage() {
   }, []);
 
   return (
-    <div>
-
-      {/* Your page content goes here */}
-    </div>
+    <div/>
   );
 }
