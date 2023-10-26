@@ -3,6 +3,7 @@
 In this guide, I will cover step by step the process of adding immutable passport authentication to an applilcation and creating transactions with it.
 
 Before proceeding, Note that this could be done in plain html/javascript as well as all javascript frameworks including [svelte](https://svelte.dev/), [react](https://react.dev/), [vue](https://vuejs.org/), etc. For this guide, we would make use of [Nextjs](https://nextjs.org).
+
 However, all the core concepts convered here are applicable to all of them.
 
 ## Pre-requisites
@@ -47,7 +48,8 @@ We need these three values to connect
 
 Follow the steps below to get the required values
 
-- Go to [hub.immutable.com](https://hub.immutable.com) and create an account. If you're unsure how to do that, Complete this [Quest 3 Guide](https://app.stackup.dev/quest_page/quest-3---create-an-immutable-passport)
+- Go to [hub.immutable.com](https://hub.immutable.com) and create an account.
+- Initialize a project on Immutable zkEvm and a default Environment on Testnet. If you're unsure how to do that, Complete this [Quest 3 Guide](https://app.stackup.dev/quest_page/quest-3---create-an-immutable-passport)
 - Add A passport Client
 ![Alt text](image-1.png)
 - Fill the form provided with the following steps
@@ -56,8 +58,9 @@ Follow the steps below to get the required values
 
 1. **Application** Type: Web application (remains unchanged). This represents where the application is intented to be run
 2. **Client Name**: give your application any name. This is just an identifier.
-3. **Logout URLs**: This is very *important*. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g <https://your-site-name.com/>
-4. **Callback URLs**: Also very *important*. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g <https://your-site-name.com/login>
+3. **Logout URLs**: This is very **IMPORTANT**. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g <https://your-site-name.com/>. Since we would be runnig the code locally on port `3001`. Enter `http://localhost:3001` into the input box
+4. **Callback URLs**: Also very **IMPORTANT**. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g <https://your-site-name.com/login>.
+Since we are runnign the code on our dev server port `3001`, Enter `http://localhost:3001/login` into the input box
 
 Click **Create** once you have filled these values.
 
@@ -67,7 +70,7 @@ Copy the three values and replace them in the `.env.example` file
 
 ## The Bug Before The Storm
 
-*Very Important*: There's a bug in the sdk where it looks for the `global` and `process`. The `global` and `process` object only exists on Runtimes like Nodejs and not on the browser. To be able to make use of the sdk, you have to import the script below before any other code
+In the course of writing this guide, I ran into a bug in the sdk where it looks for the `global` and `process`. If you ever encounter errors such as `global object missing` or `process missing`, simply add the code above to be run before all others
 
 ```javascript
 if (typeof global === 'undefined') {
@@ -79,17 +82,21 @@ if (typeof global === 'undefined') {
    }
 ```
 
-Here we make the `global` object to point to the `window` object on the browser. Also give a value to the `process` object. Without this, the entire process fails
-
-However, For our current project, you can continue with following the steps. The script will be imported much later
-
 ## Initialise the Passport object
+
+The main package that enables all the passport functions is `@imtbl/sdk`
+
+In your own application, ensure you install the package via npm to used these functions
+
+```bash
+npm install @imtbl/sdk
+```
 
 To have access to immutable authentication, you have to import the necessary function and substitute the values `Logout Url`,  `Callback Uri` and `Client Id`
 
 ```javascript
 //import the needed functions
-import { config, passport, provider } from '@imtbl/sdk';
+import { config, passport } from '@imtbl/sdk';
 
 // Initialize the passport config
 const passportConfig = {
@@ -121,15 +128,15 @@ In the root folder of your project, create a folder `store` and create a file `p
 <summary>store/passportStore.js</summary>
 <code>
 <pre>
-import { createContext, useContext, useState, useEffect } from 'react';
-import { config, passport, provider } from '@imtbl/sdk';
+import { createContext, useContext, useState, useReducer } from 'react';
+import { config, passport } from '@imtbl/sdk';
 
 const passportConfig = {
   baseConfig: new config.ImmutableConfiguration({
     environment: config.Environment.SANDBOX
   }),
   clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
-  redirectUri: process.env.CALLBACK_URL,
+  redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL,
   logoutRedirectUri: process.env.NEXT_PUBLIC_LOGOUT_URL,
   audience: 'platform_api',
   scope: 'openid offline_access email transact'
@@ -141,12 +148,11 @@ export const MyContext = createContext();
 
 export function MyProvider({ children }) {
   const [passportState] = useState(passportInstance);
-  const [providerImx, setProviderImx] = useState(null)
 
   return (
-    `<MyContext.Provider value={{ providerImx, setProviderImx, passportState: passportInstance, }}>`
+    <MyContext.Provider value={{ passportState }}>
       {children}
-    `</MyContext.Provider>`
+    </MyContext.Provider>
   );
 }
 
@@ -183,24 +189,20 @@ We have created a react context store and put the passport object. This is done 
 
 ## Log In User With Passport
 
-After initialising the passport object, we can login by using two methods
+After initialising the passport object, we can login a user by running the two commands below
 
-1. passportInstance.connectImxSilent();
-2. passportInstance.connectImx();
-
-`connectImx` starts the entire login flow from scratch and opens the `Callback Url` in a new mini-window to achieve this while `connectImxSilent` as the name implies does this silently using the tokens generated on previous logins.
-
-The aim of `connectImxSilent` is so the user does not have to go through the entire login process from scratch whenever they reload the page. It just connects *Silently*
-
-In pseudocode, here's how the workflow will be
-
-```pseudocode
-try connectImxSilent
-if it errors
-try connectImx
+```javascript
+const providerZkevm = passportInstance.connectEvm()
+const accounts = await providerZkevm.request({ method: "eth_requestAccounts" })
 ```
 
-The connectImx displays a popup that opens the `Callback Url` (which we have directed to `/login`. A route that is yet to bet made).
+First, we create a zkEVM provider. This initializes an object that can be used to interact directly with the blockchain using the details of the passportInstance
+
+Secondly, we call an RPC named `eth_requestAccounts`. This is what trigger's the entire login process. It returns an array containing the addresses associated with the user
+
+*Aside*: An RPC (Remote Procedure Call) is simply a defined method provided by the library (in our case) to interact with the ethereum blockchain. In the course of this guide, we would explore some other examples of it
+
+After calling `eth_requestAccoutns`,  a popup opens the `Callback Url` (In our case, `/login`)
 In this route, we would handle the logging in inside the popup and return the data to the home page
 
 ```javascript
@@ -244,106 +246,14 @@ Update [src/components/NavBar.jsx](src/components/NavBar.jsx) to add the login f
 <code>
 <pre>
 'use client'
-import { useMyContext } from "@/store/passportStore";
-import Head from "next/head";
-import Script from "next/script";
-import { useState } from 'react';
-
-export default function NavBar() {
-  const { setProviderImx, providerImx ,passportInstance } = useMyContext();
-  const [buttonState, setButtonState] = useState('Connect Passport')
-  const [isLoading, setIsLoading] = useState(false)
-
-  async function login(
-    if (!passportInstance) return
-    setButtonState("...Connecting")
-    setIsLoading(true)
-    let providerImx = await passportInstance.connectImxSilent()
-    console.log("provider after silent connect", providerImx);
-    if (!providerImx) {
-      try {
-        console.log("I am connecting now")
-        providerImx = await passportInstance.connectImx()
-      }
-      catch (error) {
-        console.log("Something went wrong")
-        console.log({ error })
-        setButtonState('Connect Passport')
-        throw error
-      }
-      finally {
-        setIsLoading(false)
-      }
-    }
-    setProviderImx(providerImx)
-    setButtonState('Connected')
-    return
-  ) {
-    return
-  }
-
-  async function logout()  {
-    return
-}
-
-  return (
- `<>`
-`<Head>`
-        `<title>`Immutable Planner App`</title>`
-        `<meta name="description" content="Generated by create next app" />`
-        `<meta name="viewport" content="width=device-width, initial-scale=1" />`
-        `<link rel="icon" href="/favicon.ico" />`
-      `</Head>`
-      `<div className="fixed flex justify-end px-4 gap-4 top-0 backdrop-blur-md py-4 w-full">`
-             `<button className="text-grey-100 px-4 py-2 opacity-100 rounded-full bg-green-500 hover:bg-green-300" onClick={login}>`
-          {buttonState}
-        `</button>`
-        `</div>`
-      `</>`
-  );
-}
-</pre>
-</code>
-</details>
-
-Create a file in [src/pages/](src/pages/) and call it `login.js`. This is where we would handle the loginCallback(). Also note that this url would match the `Callback Url` we have set in [hub.immutable.com](https://hub.immutable.com) while creating the passport client
-
-<details>
-<summary>src/pages/login.js</summary>
-</details>
-
-## Getting Logged In User Details
-
-`connectImx` and `connectImxSilent` return a provider object which we have save into the context store as `providerImx`. Contained in the provider object, are wide range of information about the logged in user. Which includes, the tokens, email, eth address, etc
-
-We could get the id token, access token , refresh token, email, and address from the providerImx object by:
-
-```javascript
-const idToken = providerImx.user.idToken
-const refreshToken = providerImx.user.accessToken
-const accessToken = providerImx.user.refreshToken
-const userEmail = providerImx.user.profile.email
-const ethAddress = providerImx.user.imx.ethAddress
-const nickname = providerImx.user.profile.nickname
-```
-
-These are some of the values we could get from the provider. There are a lot more. Now we would insert these values on the front end. We would show the user email and eth address on the Navbar while the other details will be shown on the Immutable Widget
-
-Update [src/components/NavBar.jsx](src/components/NavBar.jsx) with the code below
-
-<details>
-<summary>src/components/NavBar.jsx</summary>
-<code>
-<pre>
-'use client'
 
 import { useMyContext } from "@/store/passportStore";
 import Head from "next/head";
 import Script from "next/script";
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 
-export default function NavBar() {
-  const { setProviderImx, providerImx ,passportState: passportInstance, providerZkevm  } = useMyContext();
+export default function NavButton() {
+  const {passportState: passportInstance, userInfo, dispatch } = useMyContext();
   const [buttonState, setButtonState] = useState('Connect Passport')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -351,30 +261,35 @@ export default function NavBar() {
     if (!passportInstance) return
     setButtonState("...Connecting")
     setIsLoading(true)
-    let providerImx = await passportInstance.connectImxSilent()
-    console.log("provider after silent connect", providerImx);
-    if (!providerImx) {
-      try {
-        console.log("I am connecting now")
-        providerImx = await passportInstance.connectImx()
-        console.log(providerImx)
-      }
-      catch (error) {
-        console.log("Something went wrong")
+    try {
+      console.log("I am connecting now")
+      const providerZkevm = passportInstance.connectEvm()
+      const accounts = await providerZkevm.request({ method: "eth_requestAccounts" })
+      // Set the address
+      dispatch({
+        type: 'add_user_info',
+        key: 'address',
+        value: accounts[0]
+      })
+    } catch (error) {
+    console.log("Something went wrong")
         console.log({ error })
         setButtonState('Connect Passport')
-        throw error
-      }
-      finally {
-        setIsLoading(false)
-      }
+          throw error
+    } finally {
+      setIsLoading(false)
     }
-    setProviderImx(providerImx)
     setButtonState('Connected')
     return
+
   }
 
-  `return (`
+  async function logout() {
+    // Logout Function Go Here
+    return
+}
+
+  return (
  <>
 `<Head>`
         `<title>Immutable Planner App</title>`
@@ -387,24 +302,269 @@ export default function NavBar() {
             buttonState === 'Connected'
             ?
             <>
-            {providerImx != null
-              ?
-            <>
-              `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{providerImx.user.profile.email} </p>`
-                  `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{providerImx.user.imx.ethAddress }</p>`
-                </>
-                : null
-            }
+              `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">`{userInfo.email ?? "Hello world"} </`p>`
+                  `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.address ?? "Hello world" }</p>`
             `<button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>`
             </>
-            : `<button disabled={isLoading} className={`text-grey-100 px-4 py-2 opacity-100 rounded-full "bg-green-500" }`} onClick={login}>`
+            : `<button disabled={isLoading} className={"text-grey-100 px-4 py-2 opacity-100 rounded-full "bg-green-500" }} onClick={login}>`
           {buttonState}
         `</button>`
           }
         `</div>`
       </>
-  `);`
-`}`
+  );
+}
+
+</pre>
+</code>
+</details>
+
+Create a file in [src/pages/](src/pages/) and call it `login.js`. This is where we would handle the loginCallback(). Also note that this url would match the `Callback Url` we have set in [hub.immutable.com](https://hub.immutable.com) while creating the passport client
+
+<details>
+<summary>src/pages/login.js</summary>
+<code>
+<pre>
+import { useEffect } from 'react';
+import { useMyContext } from '@/store/passportStore';
+
+export default function MyPage() {
+  const { passportState: passportInstance,  } = useMyContext();
+  useEffect(() => {
+    async function handleLoginCallback() {
+      if (!passportInstance) {
+        return
+      }
+    try {
+        console.log("login callback");
+        await passportInstance.loginCallback();
+    }
+    catch (err) {
+        console.error("login callback error", err);
+    }
+    }
+    handleLoginCallback()
+  }, []);
+
+  return (
+    `<div/>`
+  );
+}
+</pre>
+</code>
+</details>
+
+
+Update [src/store/passportStore.js](src/store/passportStore.js)
+
+<details>
+<summary>src/store/passportStore.js</summary>
+<code>
+<pre>
+import { createContext, useContext, useState, useReducer } from 'react';
+import { config, passport } from '@imtbl/sdk';
+
+const passportConfig = {
+  baseConfig: new config.ImmutableConfiguration({
+    environment: config.Environment.SANDBOX
+  }),
+  clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+  redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL,
+  logoutRedirectUri: process.env.NEXT_PUBLIC_LOGOUT_URL,
+  audience: 'platform_api',
+  scope: 'openid offline_access email transact'
+};
+
+const passportInstance = typeof window !== 'undefined' ? new passport.Passport(passportConfig) : undefined
+
+export const MyContext = createContext();
+
+export function MyProvider({ children }) {
+  const [passportState] = useState(passportInstance);
+  const [userInfo, dispatch] = useReducer(reducer, {address: null, email: null, nickname: null, idToken: null, accessToken: null})
+
+  function reducer(state, action) {
+    const key = action.key
+    const value = action.value
+    switch (action.type) {
+      case `add_user_info`: {
+        return {
+          ...state,
+          [key]: value
+        }
+      }
+      default: return state
+    }
+  }
+
+  return (
+    <MyContext.Provider value={{ passportState, userInfo, dispatch }}>
+      {children}
+    </MyContext.Provider>
+  );
+}
+
+export function useMyContext() {
+  return useContext(MyContext);
+}
+</pre>
+</code>
+</details>
+
+We added a user object to the store. This enables us re-use and update this object in different parts of the codebase without having to recreate it.
+
+After updating the files, test the login functionality now.
+
+## Getting Logged In User Details
+
+The `passportInstance` object comes with more functions to get the details of the logged in user. These only work if there's user currently signed in.
+In your code, ensure to call the `eth_requestAccounts` function and be sure it doesn't error before trying to fetch the user details
+
+1. User's Email and Nickname
+
+```js
+const userInfo = await passportInstance.getUserInfo()
+```
+
+On success, the returns an object of the shape
+
+```js
+{
+  email: <user's email>
+  sub: <A unique identifier of the logged in user>
+  nickname: <user's nickname>
+}
+```
+
+You could then de-structure the object to get the nickname and the email
+
+```js
+const email = userInfo.email
+const nickname= userInfo.nickname
+```
+
+2. User's Access Token
+Access tokens are used to re-authenticate the user. This value is important so the entire login process is not triggered every time
+the user reloads the page
+
+```js
+const accessToken = await passportInstance.getAccessToken()
+```
+
+3. User's Id Token
+
+This is an identifier for immutable passport users
+
+```js
+const idToken = await passportInstance.getIdToken()
+```
+
+Now you  cold fetch and insert these values on the front end. We would show the user email and eth address on the Navbar while the other details will be shown on the Immutable Widget
+
+Update [src/components/NavBar.jsx](src/components/NavBar.jsx) with the code below
+
+<details>
+<summary>src/components/NavBar.jsx</summary>
+<code>
+<pre>
+'use client'
+
+import { useMyContext } from "@/store/passportStore";
+import Head from "next/head";
+import Script from "next/script";
+import { useReducer, useState } from 'react';
+
+export default function NavButton() {
+  const {passportState: passportInstance, userInfo, dispatch } = useMyContext();
+  const [buttonState, setButtonState] = useState('Connect Passport')
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function login() {
+    if (!passportInstance) return
+    setButtonState("...Connecting")
+    setIsLoading(true)
+    try {
+      console.log("I am connecting now")
+      const providerZkevm = passportInstance.connectEvm()
+      const accounts = await providerZkevm.request({ method: "eth_requestAccounts" })
+      // Set the address
+      dispatch({
+        type: 'add_user_info',
+        key: 'address',
+        value: accounts[0]
+      })
+      // Fetch user details
+      const user = await passportInstance.getUserInfo()
+      // Set the email
+      dispatch({
+        type: 'add_user_info',
+        key: 'email',
+        value: user.email
+      })
+      //set the nickname
+      dispatch({
+        type: 'add_user_info',
+        key: 'nickname',
+        value: user.nickname
+      })
+      // Fetch user access token
+      const accessToken = await passportInstance.getAccessToken()
+      // set the access token
+      dispatch({
+        type: 'add_user_info',
+        key: 'accessToken',
+        value: accessToken
+      })
+      // Fetch user's id token
+      const idToken = await passportInstance.getIdToken()
+      // set the id token
+      dispatch({
+        type: 'add_user_info',
+        key: 'idToken',
+        value: idToken
+      })
+    } catch (error) {
+    console.log("Something went wrong")
+        console.log({ error })
+        setButtonState('Connect Passport')
+          throw error
+    } finally {
+      setIsLoading(false)
+    }
+    setButtonState('Connected')
+    return
+  }
+   async function logout() {
+    // Logout Function Go Here
+    return
+}
+
+  return (
+ <>
+`<Head>`
+        `<title>Immutable Planner App</title>`
+        `<meta name="description" content="Generated by create next app" />`
+        `<meta name="viewport" content="width=device-width, initial-scale=1" />`
+        `<link rel="icon" href="/favicon.ico" />`
+      `</Head>`
+      `<div className="fixed flex justify-end px-4 gap-4 top-0 backdrop-blur-md py-4   w-full">`
+          {
+            buttonState === 'Connected'
+            ?
+            <>
+              `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">`{userInfo.email ?? "Hello world"} </`p>`
+                  `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.address ?? "Hello world" }</p>`
+            `<button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>`
+            </>
+            : `<button disabled={isLoading} className="text-grey-100 px-4 py-2 opacity-100 rounded-full bg-green-500" onClick={login}>`
+          {buttonState}
+        `</button>`
+          }
+        `</div>`
+      </>
+  );
+}
+
 </pre>
 </code>
 </details>
@@ -420,25 +580,22 @@ Next, we need to populate the immutable widget with the required data. Update [s
 'use client'
 
 import { useMyContext } from "@/store/passportStore";
+import { useRef, useState } from 'react';
 
 export default function ImmutableWidget() {
-  const { providerImx, passportState: passportInstance  } = useMyContext()
+  const { passportState: passportInstance, userInfo } = useMyContext()
 
-  return (
-    `<div style={{ minWidth: 300, maxWidth: 500 }}>`
-      `<div style={{display: "flex",justifyContent: "space-between",alignItems: "row",}}>`
-        `<p style={{color: "white",fontSize: "24px"}}>Immutable</p>`
+return (
+    `<div className="min-w-[400px] max-w-[500px] grid gap-4 py-3 overflow-hidden">`
+      `<details open>`
+        `<summary className="text-white underline text-xl overflow-x-auto max-w-full mb-4">User Details</summary>`
+      `<div className="tokens max-w-[500px]">`
+        `<details open className="" ><summary>Id Token</summary>{userInfo.idToken ?? ""}</details>`
+        `<details open><summary>Access Token</summary>{userInfo.accessToken ?? ""}</details>`
+        `<details ><summary>Nickname</summary>{userInfo.nickname ?? "User has no nickname"}</details>`
       `</div>`
-      `<div`
-        `className="tokens">`
-        `{/* User Data Goes Here*/}`
-        `<details><summary>Id Token</summary>{providerImx?.user.idToken ?? ""}</details>`
-        `<details><summary>Access Token</summary>{providerImx?.user.accessToken ?? ""}</details>`
-        `<details><summary>Refresh Token</summary>{providerImx?.user.refreshToken ?? ""}</details>`
-        `<details><summary>Nickname</summary>{providerImx?.user.profile.nickname ?? "User has no nickname"}</details>`
-        `{/* Rpc function go here */}`
-      `</div>`
-    `</div>`
+          `</details>`
+     {/*Rpc functions go here*/}
   );
 }
 </pre>
@@ -464,14 +621,199 @@ async function logout()  {
 
 And that's it. We are now able to login and logout the user.
 
-## Initiating A Transaction From Passport
+## Interacting With The Blockchain with Passport
 
-To call the EVM RPC functions, we need to create a `Zkevm Provider`. All through, we have used the `Imx Provider`
+As stated [above](#log-in-user-with-passport), we could call other RPC function and interact with the blockchain once the user is signed in. The functions are called on the `providerZkevm` object and not the `passportInstance`
 
-```javascript
-const providerZkevm = passportInstance.connectEvm()
+Here are some of them
+
+1. Get Immutable X Gas Price
+
+```js
+const gasPrice = await providerZkevm.request({ method: 'eth_gasPrice' });
 ```
 
-`providerZkevm` returns an object which could be used to interact with the ethereum chain. Here are some example functions
+2. Get The Balance In an ETH address
 
-- 
+```js
+const userBalance = await providerZkevm.request({
+      method: 'eth_getBalance',
+      params: [
+        userInfo.address,
+        'latest'
+      ]
+});
+```
+
+3. Get Latest Block Number
+
+```js
+const latestBlockNumber = await providerZkevm.request({ method: 'eth_blockNumber' });
+```
+
+4. Get Chain Id
+
+```js
+const chainId = await providerZkevm.request({ method: 'eth_chainId' });
+```
+
+We could also do more than call static value. We could also initiate transaction. :We could sent data or create contract using the `eth_sendTransaction` RPC
+
+```js
+const transactionHash = await provider.request({
+  method: 'eth_sendTransaction',
+  params: [
+    {
+      to: <destination address>,
+      data: <string sent>,
+      value: <value sent (in hex encoded string)>
+    }
+  ]
+});
+```
+
+Update [src/componets/widgets/Immutable.jsx](src/components/widgets/ImmutableWidget.jsx)
+
+Below the line labelled `{/*Rpc functions go here*/}`, add the code below
+
+<details>
+<summary>src/components/widgets/ImmutableWidget.jsx</summary>
+<code>
+<pre>
+'use client'
+
+import { useMyContext } from "@/store/passportStore";
+import { useRef, useState } from 'react';
+
+export default function ImmutableWidget() {
+  const { passportState: passportInstance, userInfo } = useMyContext()
+  const providerZkevm = passportInstance?.connectEvm()
+  const [isLoading, setIsLoading] = useState(false);
+  const[gasPrice, setGasPrice] = useState('');
+  const[userBalance, setUserBalance] = useState('');
+  const[latestBlockNumber, setLatestBlockNumber] = useState('');
+  const[chainId, setChainId] = useState('');
+
+  async function getGasPrice() {
+    if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    try {
+      const gasPrice = await providerZkevm.request({ method: 'eth_gasPrice' });
+      setGasPrice(gasPrice)
+    } catch (error) {
+      console.log(error)
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function getUserBalance() {
+    console.log({user: userInfo.address})
+    if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    try {
+      const userBalance = await providerZkevm.request({
+        method: 'eth_getBalance',
+  params: [
+    userInfo.address,
+    'latest'
+  ]
+      });
+      setUserBalance(userBalance)
+    } catch (error) {
+      console.log(error)
+          }
+    finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function getLatestBlockNumber() {
+    console.log({address: userInfo.address})
+  if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    try {
+      const latestBlockNumber = await providerZkevm.request({ method: 'eth_blockNumber' });
+      setLatestBlockNumber(latestBlockNumber)
+    } catch (error) {
+      console.log(error)
+    }
+    finally {
+      setIsLoading(false)
+    }
+}
+
+  async function getChainId() {
+  if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    try {
+      const chainId = await providerZkevm.request({ method: 'eth_chainId' });
+      setChainId(chainId)
+    } catch (error) {
+      console.log(error)
+    }
+    finally {
+      setIsLoading(false)
+    }
+}
+
+return (
+    `<div className="min-w-[400px] max-w-[500px] grid gap-4 py-3 overflow-hidden">`
+      `<details open>`
+        `<summary className="text-white underline text-xl overflow-x-auto max-w-full mb-4">User Details</summary>`
+      `<div className="tokens max-w-[500px]">`
+        `<details open className="" ><summary>Id Token</summary>{userInfo.idToken ?? ""}</details>`
+        `<details open><summary>Access Token</summary>{userInfo.accessToken ?? ""}</details>`
+        `<details ><summary>Nickname</summary>{userInfo.nickname ?? "User has no nickname"}</details>`
+      `</div>`
+          `</details>`
+     {/*Rpc functions go here*/}
+      `<details>`
+      `<summary className="text-white text-xl underline mb-4">`
+        {isLoading ?
+          `<svg class="animate-spin mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">`
+            `<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>`
+            `<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>`
+          `</svg> : null}`
+         Rpc Methods`</summary>`
+        `<div className="grid gap-2">`
+        `<div  className="flex gap-2">`
+          `<button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Imx Gas Price</button>`
+          `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>`
+            {gasPrice}
+          `</div>`
+        `</div>`
+        `<div  className="flex gap-2">`
+          `<button disabled={isLoading} onClick={getUserBalance} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get User Balance</button>`
+          `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>`
+            {userBalance}
+          `</div>`
+        `</div>`
+        `<div  className="flex gap-2">`
+          `<button disabled={isLoading} onClick={getLatestBlockNumber} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">`
+            Latest Block Number
+          `</button>`
+          `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{latestBlockNumber}</div>`
+        `</div>`
+        `<div  className="flex gap-2">`
+          `<button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Chain Id</button>`
+          `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{chainId}</div>`
+        `</div>`
+`</div>`
+      `</details>`
+    `</div>`
+</details>
+
+## Conclusion
+
+We have seen how powerful the Immutable zkEvm passport is and how easy it is to integrate into any application and interact with the blockchain.
+
+Using the techniques provided by this guide, you could build web application ranging from simple to complex and add the passport authentication in just minutes.
+
+## Resources
+
+- The Demp Project Full Source Code - [Github](https://github.com/Complexlity/immutable-planner-app)
+- The Demo Project Live - [Immutable Planner App](https://immutable-planner-app.vercel.app)
+- The Immutable Passport [Official Documentation](https://docs.immutable.com/docs/zkEVM/products/passport)
+- The Writer Of this Awesome Guide - [Complexlity](https://complexlity.vercel.app)
