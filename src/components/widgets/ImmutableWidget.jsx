@@ -8,10 +8,9 @@ export default function ImmutableWidget() {
   const providerZkevm = passportInstance?.connectEvm()
   const [isLoading, setIsLoading] = useState(false);
   const[gasPrice, setGasPrice] = useState('');
-  const[userBalance, setUserBalance] = useState('');
+  const[myBalance, setMyBalance] = useState('');
   const[latestBlockNumber, setLatestBlockNumber] = useState('');
   const[chainId, setChainId] = useState('');
-  const[e, setTransactionHash] = useState('');
 
   async function getGasPrice() {
     if (!passportInstance || !userInfo.address) return
@@ -19,7 +18,7 @@ export default function ImmutableWidget() {
     try {
 
       const gasPrice = await providerZkevm.request({ method: 'eth_gasPrice' });
-      setGasPrice(gasPrice)
+      setGasPrice(parseInt(gasPrice, 16))
     } catch (error) {
       console.log(error)
     }
@@ -28,19 +27,19 @@ export default function ImmutableWidget() {
     }
   }
 
-  async function getUserBalance() {
+  async function getMyBalance() {
     console.log({user: userInfo.address})
     if (!passportInstance || !userInfo.address) return
     setIsLoading(true)
     try {
-      const userBalance = await providerZkevm.request({
+      const myBalance = await providerZkevm.request({
         method: 'eth_getBalance',
   params: [
     userInfo.address,
     'latest'
   ]
       });
-      setUserBalance(userBalance)
+      setMyBalance(parseInt(myBalance, 16))
     } catch (error) {
       console.log(error)
           }
@@ -104,8 +103,8 @@ export default function ImmutableWidget() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-      setTransactionHash(transaction)
+      URL.revokeObjectURL(url);
+      e.target.hash.value = ''
     } catch (error) {
       console.log(error)
       alert("Something went wrong. Please try again")
@@ -143,19 +142,19 @@ return (
         <div  className="flex gap-2">
           <button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Imx Gas Price</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>
-            {gasPrice}
+            {gasPrice}{" "}{gasPrice ? "wei" : ""}
           </div>
         </div>
         <div  className="flex gap-2">
-          <button disabled={isLoading} onClick={getUserBalance} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get User Balance</button>
+          <button disabled={isLoading} onClick={getMyBalance} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get My Balance</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>
-            {userBalance}
+            {myBalance}
           </div>
 
         </div>
         <div  className="flex gap-2">
           <button disabled={isLoading} onClick={getLatestBlockNumber} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">
-          Get Latest Block Number
+          Get Block Number
           </button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{latestBlockNumber}</div>
         </div>
@@ -169,10 +168,10 @@ return (
           </p>
           <div className="flex gap-4">
           <input type="text" placeholder="hash" name="hash" className="w-full px-2 py-2 rounded-xl" />
-          <button disabled={isLoading} className=" rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>
+          <button disabled={isLoading} className="w-full max-w-fit rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Txn</button>
           </div>
         </form>
-        <small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example hashed from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>
+        <small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example transaction hashed from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>
 </div>
       </details>
     </div>
