@@ -141,7 +141,7 @@ return (
          Rpc Methods</summary>
         <div className="grid gap-2">
         <div  className="flex gap-2">
-          <button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Imx Gas Price</button>
+          <button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Imx Gas Price</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>
             {gasPrice}
           </div>
@@ -155,23 +155,24 @@ return (
         </div>
         <div  className="flex gap-2">
           <button disabled={isLoading} onClick={getLatestBlockNumber} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">
-            Latest Block Number
+          Get Latest Block Number
           </button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{latestBlockNumber}</div>
         </div>
         <div  className="flex gap-2">
-          <button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Chain Id</button>
+          <button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Chain Id</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{chainId}</div>
         </div>
-        <form onSubmit={sendTransaction}>
-          <p>
-            Send A transaction
+        <form onSubmit={sendTransaction} className="px-1">
+          <p className="mx-auto text-white text-center text-xl mb-2 mt-4">
+            Get Transaction By Hash
           </p>
-          <input type="text" placeholder="hash" name="hash" />
-          {/* <input type="text" placeholder="data (optional)" name="data"/> */}
-          <button disabled={isLoading} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>
+          <div className="flex gap-4">
+          <input type="text" placeholder="hash" name="hash" className="w-full px-2 py-2 rounded-xl" />
+          <button disabled={isLoading} className=" rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>
+          </div>
         </form>
-
+        <small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example hashed from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>
 </div>
       </details>
     </div>
