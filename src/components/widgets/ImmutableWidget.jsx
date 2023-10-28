@@ -2,6 +2,7 @@
 
 import { useMyContext } from "@/store/passportStore";
 import { useRef, useState } from 'react';
+import Web3 from 'web3'
 
 export default function ImmutableWidget() {
   const { passportState: passportInstance, userInfo } = useMyContext()
@@ -11,7 +12,7 @@ export default function ImmutableWidget() {
   const[userBalance, setUserBalance] = useState('');
   const[latestBlockNumber, setLatestBlockNumber] = useState('');
   const[chainId, setChainId] = useState('');
-
+  const[e, setTransactionHash] = useState('');
 
   async function getGasPrice() {
     if (!passportInstance || !userInfo.address) return
@@ -78,6 +79,40 @@ export default function ImmutableWidget() {
       setIsLoading(false)
     }
 }
+  async function sendTransaction(e) {
+    e.preventDefault()
+    let address = e.target.address.value
+    const data = e.target.data.value
+    console.log({address, data})
+  // if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    if (!address) {
+      address = "0x4e665Bd3e2A1c4c4CCCEBa625Ec518faAAcE6B0B"
+      // alert('Address missing')
+      // return
+    }
+    try {
+      const addresses = await providerZkevm.request({ method: 'eth_requestAccounts' });
+      console.log({addresses})
+      const transactionHash = await providerZkevm.request({
+  method: 'eth_sendTransaction',
+  params: [
+    {
+      to: "0x4e665Bd3e2A1c4c4CCCEBa625Ec518faAAcE6B0B",
+      data: data ?? "Hello world",
+      value:
+    }
+  ]
+      });
+      console.log({transactionHash})
+      setTransactionHash(transactionHash)
+    } catch (error) {
+      console.log(error)
+    }
+    finally {
+      setIsLoading(false)
+    }
+}
 
 return (
     <div className="min-w-[400px] max-w-[500px] grid gap-4 py-3 overflow-hidden">
@@ -127,6 +162,14 @@ return (
           <button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Chain Id</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{chainId}</div>
         </div>
+        <form onSubmit={sendTransaction}>
+          <p>
+            Send A transaction
+          </p>
+          <input type="text" placeholder="address" name="address" />
+          <input type="text" placeholder="data (optional)" name="data"/>
+          <button disabled={isLoading} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>
+        </form>
 
 </div>
       </details>
