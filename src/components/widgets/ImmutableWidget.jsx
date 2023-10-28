@@ -2,7 +2,6 @@
 
 import { useMyContext } from "@/store/passportStore";
 import { useRef, useState } from 'react';
-import Web3 from 'web3'
 
 export default function ImmutableWidget() {
   const { passportState: passportInstance, userInfo } = useMyContext()
@@ -81,33 +80,35 @@ export default function ImmutableWidget() {
 }
   async function sendTransaction(e) {
     e.preventDefault()
-    let address = e.target.address.value
-    const data = e.target.data.value
-    console.log({address, data})
+    let hash = e.target.hash.value
+
   // if (!passportInstance || !userInfo.address) return
     setIsLoading(true)
-    if (!address) {
-      address = "0x4e665Bd3e2A1c4c4CCCEBa625Ec518faAAcE6B0B"
-      // alert('Address missing')
-      // return
+    if (!hash) {
+      // Default hash value if not provided
+      hash = "0xa0d300ac90e69f3ba6274ca1a712219951b79ba6c0117f538fe16c016a701951"
     }
     try {
-      const addresses = await providerZkevm.request({ method: 'eth_requestAccounts' });
-      console.log({addresses})
-      const transactionHash = await providerZkevm.request({
-  method: 'eth_sendTransaction',
+      const transaction = await providerZkevm.request({
+  method: 'eth_getTransactionByHash',
   params: [
-    {
-      to: "0x4e665Bd3e2A1c4c4CCCEBa625Ec518faAAcE6B0B",
-      data: data ?? "Hello world",
-      value:
-    }
+    hash
   ]
       });
-      console.log({transactionHash})
-      setTransactionHash(transactionHash)
+      // Download file into user's machine as trasaction.json
+       const blob = new Blob([JSON.stringify(transaction, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'transaction.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+      setTransactionHash(transaction)
     } catch (error) {
       console.log(error)
+      alert("Something went wrong. Please try again")
     }
     finally {
       setIsLoading(false)
@@ -166,8 +167,8 @@ return (
           <p>
             Send A transaction
           </p>
-          <input type="text" placeholder="address" name="address" />
-          <input type="text" placeholder="data (optional)" name="data"/>
+          <input type="text" placeholder="hash" name="hash" />
+          {/* <input type="text" placeholder="data (optional)" name="data"/> */}
           <button disabled={isLoading} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>
         </form>
 
