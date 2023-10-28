@@ -658,20 +658,23 @@ const latestBlockNumber = await providerZkevm.request({ method: 'eth_blockNumber
 const chainId = await providerZkevm.request({ method: 'eth_chainId' });
 ```
 
-We could also do more than call static value. We could also initiate transaction. :We could sent data or create contract using the `eth_sendTransaction` RPC
+5. Get Transaction By Hash
+This function fetch the transaction details of any transaction on the [Immutable Testnet Explorer](https://explorer.testnet.immutable.com/txs)
 
 ```js
-const transactionHash = await provider.request({
-  method: 'eth_sendTransaction',
+const transaction = await provider.request({
+  method: 'eth_getTransactionByHash',
   params: [
-    {
-      to: <destination address>,
-      data: <string sent>,
-      value: <value sent (in hex encoded string)>
-    }
+    <transaction hash />
   ]
 });
 ```
+
+Substitute `<transaction hash>` with any valid transaction on the immutable testnet and it would return it's value.
+
+In our code, this function has been made to download the file as json the the user's computer
+
+
 
 Update [src/componets/widgets/Immutable.jsx](src/components/widgets/ImmutableWidget.jsx)
 
@@ -759,6 +762,43 @@ export default function ImmutableWidget() {
     }
 }
 
+async function getTransactionByHash(e) {
+    e.preventDefault()
+    let hash = e.target.hash.value
+
+  // if (!passportInstance || !userInfo.address) return
+    setIsLoading(true)
+    if (!hash) {
+      // Default hash value if not provided
+      hash = "0xa0d300ac90e69f3ba6274ca1a712219951b79ba6c0117f538fe16c016a701951"
+    }
+    try {
+      const transaction = await providerZkevm.request({
+  method: 'eth_getTransactionByHash',
+  params: [
+    hash
+  ]
+      });
+      // Download file into user's machine as trasaction.json
+       const blob = new Blob([JSON.stringify(transaction, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'transaction.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+      setTransactionHash(transaction)
+    } catch (error) {
+      console.log(error)
+      alert("Something went wrong. Please try again")
+    }
+    finally {
+      setIsLoading(false)
+    }
+}
+
 return (
     `<div className="min-w-[400px] max-w-[500px] grid gap-4 py-3 overflow-hidden">`
       `<details open>`
@@ -780,7 +820,7 @@ return (
          Rpc Methods`</summary>`
         `<div className="grid gap-2">`
         `<div  className="flex gap-2">`
-          `<button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Imx Gas Price</button>`
+          `<button disabled={isLoading} onClick={getGasPrice} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Imx Gas Price</button>`
           `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>`
             {gasPrice}
           `</div>`
@@ -793,14 +833,24 @@ return (
         `</div>`
         `<div  className="flex gap-2">`
           `<button disabled={isLoading} onClick={getLatestBlockNumber} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">`
-            Latest Block Number
+            Get Latest Block Number
           `</button>`
           `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{latestBlockNumber}</div>`
         `</div>`
         `<div  className="flex gap-2">`
-          `<button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Chain Id</button>`
+          `<button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Chain Id</button>`
           `<div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{chainId}</div>`
         `</div>`
+         `<form onSubmit={getTransactionByHash} className="px-1">`
+          `<p className="mx-auto text-white text-center text-xl mb-2 mt-4">`
+            Get Transaction By Hash
+          `</p>`
+          `<div className="flex gap-4">`
+          `<input type="text" placeholder="hash" name="hash" className="w-full px-2 py-2 rounded-xl" />`
+          `<button disabled={isLoading} className=" rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Send</button>`
+          `</div>`
+        `</form>`
+        `<small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example hashed from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>`
 `</div>`
       `</details>`
     `</div>`

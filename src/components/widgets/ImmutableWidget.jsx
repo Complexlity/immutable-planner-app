@@ -78,7 +78,7 @@ export default function ImmutableWidget() {
       setIsLoading(false)
     }
 }
-  async function sendTransaction(e) {
+  async function getTransactionByHash(e) {
     e.preventDefault()
     let hash = e.target.hash.value
 
@@ -163,7 +163,7 @@ return (
           <button disabled={isLoading} onClick={getChainId} className="w-full rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Chain Id</button>
           <div className='bg-white w-full rounded-sm py-1 px-2 placeholder:text-gray-800 placeholder:italic'>{chainId}</div>
         </div>
-        <form onSubmit={sendTransaction} className="px-1">
+        <form onSubmit={getTransactionByHash} className="px-1">
           <p className="mx-auto text-white text-center text-xl mb-2 mt-4">
             Get Transaction By Hash
           </p>
