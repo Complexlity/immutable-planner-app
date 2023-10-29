@@ -171,7 +171,7 @@ return (
           <button disabled={isLoading} className="w-full max-w-fit rounded-full px-3 py-1 bg-green-400 hover:bg-green-500">Get Txn</button>
           </div>
         </form>
-        <small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example transaction hashed from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>
+        <small className="text-gray-300 text-center"><span className="text-green-400">Tip</span>: You can get example transaction hashes from <a className="underline hover:no-underline text-amber-400 italic" href="https://explorer.testnet.immutable.com/txs" target="_blank">Immutable Explorer</a></small>
 </div>
       </details>
     </div>
