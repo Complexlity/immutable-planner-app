@@ -58,23 +58,23 @@ Follow the steps below to get the required values
 
 1. **Application** Type: Web application (remains unchanged). This represents where the application is intented to be run
 2. **Client Name**: give your application any name. This is just an identifier.
-3. **Logout URLs**: This is very **IMPORTANT**. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g `<https://your-site-name.com/>`.
+3. **Logout URLs**: This is very **IMPORTANT**. It represents the url the user is redirected to after they logout of the application (In some applications,the default landing page). E.g `https://your-site-name.com/`.
 Since we would be runnig the code locally on port `3001`. Enter http://localhost:3001 into the input box
-4. **Callback URLs**: Also very **IMPORTANT**. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g `<https://your-site-name.com/login>`.
+4. **Callback URLs**: Also very **IMPORTANT**. When you try to login, it opens a popup direct to this url. This is where the logging in takes place. E.g `https://your-site-name.com/login`.
 Since we are runnign the code on our dev server port `3001`, Enter http://localhost:3001/login into the input box
 
-When you deploy, you also have to change these URLs to point to the site address
+**IMPORTANT**: When you deploy, you also have to change these URLs to point to the site address.
 
 Click **Create** once you have filled these values.
 
 ![Alt text](image-3.png)
 
-Copy the three values and replace them in the `.env` file
+Copy the three values and replace them in the `.env` file.
 
 
 ## The Bug Before The Storm
 
-In the course of writing this guide, I ran into a bug in the sdk where it looks for the `global` and `process`. If you ever encounter errors such as `global object missing` or `process missing`, simply add the code above to be run before all others
+In the course of writing this guide, I ran into a bug in the sdk where it looks for the `global` and `process`. If you ever encounter errors such as `global object missing` or `process missing`, simply add the code above to be run before all others.
 
 ```javascript
 if (typeof global === 'undefined') {
@@ -88,7 +88,7 @@ if (typeof global === 'undefined') {
 
 ## Initialise the Passport object
 
-The main package that enables all the passport functions is `@imtbl/sdk`. First we have to install this package into the project
+The main package that enables all the passport functions is `@imtbl/sdk`. First we have to install this package into the project.
 
 ```bash
 npm install @imtbl/sdk
@@ -122,9 +122,9 @@ const passportInstance = typeof window !== 'undefined' ? new passport.Passport(p
 
 ```
 
-`typeof window === undefined`. This is a very important step for bundlers and in our Nextjs use case. This is intended to be run only on the browser so the window object would be undefined on the server
+`typeof window === undefined`. This is a very important step for bundlers and in our Nextjs use case. This is intended to be run only on the browser so the window object would be undefined on the server.
 
-In the root folder of your project, create a folder `store` and create a file `passportStore.js` and copy the file contents below into it
+In the [src folder]('/src') of the project, create a folder `store` and create a file `passportStore.js` in the newly created folder and copy the contents below into it
 
 <details>
 <summary>store/passportStore.js</summary>
@@ -308,7 +308,7 @@ export default function NavButton() {
                   `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.address ?? "Hello world" }</p>`
             `<button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>`
             </>
-            : `<button disabled={isLoading} className={"text-grey-100 px-4 py-2 opacity-100 rounded-full "bg-green-500" }} onClick={login}>`
+            : `<button disabled={isLoading} className={"text-grey-100 px-4 py-2 opacity-100 rounded-full bg-green-500" } onClick={login}>`
           {buttonState}
         `</button>`
           }
