@@ -355,7 +355,7 @@ export default function MyPage() {
 </details>
 
 
-Update [src/store/passportStore.js](src/store/passportStore.js)
+Update [src/store/passportStore.js](src/store/passportStore.js) to store the user details
 
 <details>
 <summary>src/store/passportStore.js</summary>
@@ -426,7 +426,7 @@ In your code, ensure to call the `eth_requestAccounts` function and be sure it d
 const userInfo = await passportInstance.getUserInfo()
 ```
 
-On success, the returns an object of the shape
+On success, the returns an object of the shape:
 
 ```js
 {
@@ -436,7 +436,7 @@ On success, the returns an object of the shape
 }
 ```
 
-You could then de-structure the object to get the nickname and the email
+You could then de-structure the object to get the nickname and the email.
 
 ```js
 const email = userInfo.email
@@ -444,8 +444,8 @@ const nickname= userInfo.nickname
 ```
 
 2. User's Access Token
-Access tokens are used to re-authenticate the user. This value is important so the entire login process is not triggered every time
-the user reloads the page
+
+Access tokens are used to re-authenticate the user. This value is important so the entire login process is not triggered every time the user reloads the page.
 
 ```js
 const accessToken = await passportInstance.getAccessToken()
@@ -453,7 +453,7 @@ const accessToken = await passportInstance.getAccessToken()
 
 3. User's Id Token
 
-This is an identifier for immutable passport users
+This is an identifier for immutable passport users.
 
 ```js
 const idToken = await passportInstance.getIdToken()
