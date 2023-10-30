@@ -612,6 +612,8 @@ Call `passportInstance.logout` in [src/components/NavBar.jsx](src/components/Nav
 
 <details>
 <summary>src/components/NavBar.jsx</summary>
+<code>
+<pre>
 ....Rest of the code
 async function logout()  {
   // Logout Function Go Here
@@ -619,6 +621,8 @@ async function logout()  {
     setButtonState('Connect Passport')
 }
 ...Restof the code
+</pre>
+</code>
 </details>
 
 And that's it. We are now able to login and logout the user.
