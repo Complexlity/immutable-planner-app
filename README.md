@@ -251,8 +251,7 @@ Update [src/components/NavBar.jsx](src/components/NavBar.jsx) to add the login f
 
 import { useMyContext } from "@/store/passportStore";
 import Head from "next/head";
-import Script from "next/script";
-import { useReducer, useState } from 'react';
+import { useState } from 'react';
 
 export default function NavButton() {
   const {passportState: passportInstance, userInfo, dispatch } = useMyContext();
