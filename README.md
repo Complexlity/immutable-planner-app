@@ -387,7 +387,7 @@ export function MyProvider({ children }) {
     const key = action.key
     const value = action.value
     switch (action.type) {
-      case `add_user_info`: {
+      case "add_user_info": {
         return {
           ...state,
           [key]: value
@@ -601,6 +601,8 @@ return (
 </pre>
 </code>
 </details>
+
+Now on the page, you should see the use details on the immutable widget
 
 ## Log Out A User
 
