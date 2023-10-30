@@ -595,7 +595,7 @@ return (
         `<details ><summary>Nickname</summary>{userInfo.nickname ?? "User has no nickname"}</details>`
       `</div>`
           `</details>`
-     {/*Rpc functions go here*/}
+          `</div>`
   );
 }
 </pre>
