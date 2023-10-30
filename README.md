@@ -860,7 +860,7 @@ return (
 }
 </details>
 
-Fully adding all the RPC functions
+Fully adding all the RPC functions to the immutable widget. We're now able to call all of them once we've logged in using immutable passport
 
 ## Conclusion
 
@@ -873,4 +873,4 @@ Using the techniques provided by this guide, you could build web application ran
 - The Demp Project Full Source Code - [Github](https://github.com/Complexlity/immutable-planner-app)
 - The Demo Project Live - [Immutable Planner App](https://immutable-planner-app.vercel.app)
 - The Immutable Passport [Official Documentation](https://docs.immutable.com/docs/zkEVM/products/passport)
-- The Writer Of this Awesome Guide - [Complexlity](https://complexlity.vercel.app)
+- The Writer Of this Awesome Guide - [Complexlity](https://github.com/complexlity)
