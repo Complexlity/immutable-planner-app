@@ -792,7 +792,6 @@ async function getTransactionByHash(e) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-      setTransactionHash(transaction)
     } catch (error) {
       console.log(error)
       alert("Something went wrong. Please try again")
