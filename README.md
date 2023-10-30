@@ -328,7 +328,7 @@ Create a file in [src/pages/](src/pages/) and call it `login.js`. This is where 
 import { useEffect } from 'react';
 import { useMyContext } from '@/store/passportStore';
 
-export default function MyPage() {
+export default function LoginPage() {
   const { passportState: passportInstance,  } = useMyContext();
   useEffect(() => {
     async function handleLoginCallback() {
@@ -627,7 +627,7 @@ async function logout()  {
 
 And that's it. We are now able to login and logout the user.
 
-## Interacting With The Blockchain with Passport
+## Interacting With The Blockchain using Passport
 
 As stated [above](#log-in-user-with-passport), we could call other RPC function and interact with the blockchain once the user is signed in. The functions are called on the `providerZkevm` object and not the `passportInstance`
 
@@ -682,8 +682,6 @@ In our code, this function has been made to download the file as json the the us
 
 
 Update [src/componets/widgets/Immutable.jsx](src/components/widgets/ImmutableWidget.jsx)
-
-Below the line labelled `{/*Rpc functions go here*/}`, add the code below
 
 <details>
 <summary>src/components/widgets/ImmutableWidget.jsx</summary>
@@ -814,7 +812,6 @@ return (
         `<details ><summary>Nickname</summary>{userInfo.nickname ?? "User has no nickname"}</details>`
       `</div>`
           `</details>`
-     {/*Rpc functions go here*/}
       `<details>`
       `<summary className="text-white text-xl underline mb-4">`
         {isLoading ?
@@ -859,7 +856,11 @@ return (
 `</div>`
       `</details>`
     `</div>`
+    )
+}
 </details>
+
+Fully adding all the RPC functions
 
 ## Conclusion
 
