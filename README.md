@@ -308,7 +308,7 @@ export default function NavButton() {
                   `<p className="px-4 py-2 bg-teal-600 rounded-lg text-gray-200 flex items-center justify-center">{userInfo.address ?? "Hello world" }</p>`
             `<button onClick={logout} className="bg-red-500 text-grey-800 px-4 py-2 opacity-100 rounded-full text-lg  text-gray-100">Logout</button>`
             </>
-            : `<button disabled={isLoading} className={"text-grey-100 px-4 py-2 opacity-100 rounded-full bg-green-500" } onClick={login}>`
+            : `<button disabled={isLoading} className="text-grey-100 px-4 py-2 opacity-100 rounded-full bg-green-500" onClick={login}>`
           {buttonState}
         `</button>`
           }
